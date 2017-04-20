@@ -1,0 +1,152 @@
+
+<script type="text/x-jqote-template" id="template-content">
+	<![CDATA[
+	<div id="toolbar" class="" style="top: 47px;">
+		<div class="container small-header">
+			<div class="panel">
+				<div class="panel-body">
+
+
+					<div class="col-sm-4">
+						<h3>
+							Players
+						</h3>
+
+
+
+
+					</div>
+
+					<div class="col-sm-4">
+						<div class="btn-group btn-group-justified">
+							<a href="#" data-activity="1" class="btn activity-btn <% if(this.options.activity=='1'){ %>btn-primary<% } else { %>btn-default<% } %>">Active</a>
+							<a href="#" data-activity="0" class="btn activity-btn <% if(this.options.activity=='0'){ %>btn-primary<% } else { %>btn-default<% } %>">Inactive</a>
+
+						</div>
+
+
+
+
+					</div>
+
+
+
+
+
+
+					<div class="col-sm-4">
+
+
+
+						<form id="search-form" role="search">
+							<div class="input-group  " style="width:100%">
+								<input type="text" class="form-control" placeholder="Search" name="search" id="search" value="<%= this.options.filter.search||'' %>">
+								<div class="input-group-btn">
+									<% if(this.options.filter.search){ %><button class="btn btn-danger" type="reset"><i class="fa fa-close"></i></button><% } %>
+									<button class="btn btn-default" type="submit"><i class="fa fa-search"></i></button>
+								</div>
+							</div>
+						</form>
+					</div>
+
+
+
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<table class="table table-condensed table-bordered records stack-table" id="content-table">
+		<thead>
+		<tr>
+
+			<th>
+
+				playerId
+			</th>
+			<th>
+				char_name
+			</th>
+			<th>
+				char_name
+			</th>
+
+			<th>
+
+				rank
+			</th>
+
+			<th>
+				guild
+			</th>
+
+			<th>
+
+				isAlive
+			</th>
+
+			<th>
+				killerName
+			</th>
+
+			<th>
+				lastTimeOnline
+			</th>
+
+			<th>
+				last_ip
+			</th>
+
+		</tr>
+		</thead>
+		<tbody>
+		<% for(var g in this.list){ %>
+
+		<tr class="record <% if(this.list[g].banned=='1'){ %>danger<% } %>">
+			<td>
+				<a href="https://steamcommunity.com/profiles/<%= this.list[g].playerId||'' %>/" target="_blank">
+				<%= this.list[g].playerId||'' %></a>
+			</td>
+			<td>
+				<%= this.list[g].char_name||'' %>
+			</td>
+			<td>
+				<%= this.list[g].level||'' %>
+			</td>
+			<td>
+				<%= this.list[g].rank||'' %>
+			</td>
+			<td>
+				<%= this.list[g].guild||'' %>
+			</td>
+			<td>
+				<%= this.list[g].isAlive||'' %>
+			</td>
+			<td>
+				<%= this.list[g].killerName||'' %>
+			</td>
+			<td>
+				<%= this.list[g].timeago.lastTimeOnline||'' %>
+			</td>
+			<td>
+				<%= this.list[g].last_ip||'' %>
+			</td>
+		</tr>
+
+
+
+		<% } %>
+		</tbody>
+	</table>
+
+
+
+
+
+	]]>
+</script>

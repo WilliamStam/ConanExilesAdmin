@@ -1,0 +1,83 @@
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="margin-bottom: 0" id="main-nav-bar">
+	<div class="color-line"></div>
+	<div class="container">
+		<div class="navbar-header" id="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#menu-bar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href="/app"><i class="fa fa-dashboard"></i> Conan Admin</a>
+		</div>
+		<!-- /.navbar-header -->
+
+
+		<div id="menu-bar" class="collapse navbar-collapse">
+			<ul class="nav navbar-nav ">
+
+
+				<li class="divider-vertical"></li>
+
+				<li>
+					<a href="/app/players" {% if page.section =='players' and page.sub_section == 'list' %}class="active"{% endif %}>
+						<i class="fa fa-users"></i>
+						<span class="hidden-sm">Players</span>
+					</a>
+				</li>
+				<li>
+					<a href="/app/blacklist" {% if page.section =='blacklist' and page.sub_section == 'list' %}class="active"{% endif %}>
+						<i class="fa fa-ban"></i>
+						<span class="hidden-sm">Blacklist</span>
+					</a>
+				</li>
+
+
+			</ul>
+
+
+			<ul class="nav navbar-nav navbar-right">
+
+				<li class="divider-vertical"></li>
+				<li>
+					<a href="/app/scan" {% if page.section =='scan' and page.sub_section == 'list' %}class="active"{% endif %}>
+						<i class="fa fa-play-circle"></i>
+						<span class="hidden-sm">Scan</span>
+					</a>
+				</li>
+
+				<li class="divider-vertical"></li>
+
+
+				<li class="dropdown {% if page.section=="settings" %}active{% endif %} ">
+					<a class="dropdown-toggle" data-toggle="dropdown" href="#">
+						<i class="fa fa-cogs "></i> <span class="visible-xs-inline">Settings</span>
+						<i class="fa fa-caret-down"></i>
+					</a>
+					<ul class="dropdown-menu dropdown-menu-right">
+						<li class="nav-header">Settings</li>
+						<li {% if page.sub_section =='users' %}class="active"{% endif %}>
+							<a href="/app/settings/users">
+								<i class="fa fa-users "></i>
+								Users
+							</a>
+						</li>
+
+					</ul>
+				</li>
+
+
+				<li>
+					<a href="/logout" style="padding-right:15px;">
+						<i class="fa fa-sign-out"></i>
+						<span class="visible-xs-inline"> Logout</span>
+					</a>
+				</li>
+
+			</ul>
+
+
+		</div>
+	</div>
+
+</nav>
