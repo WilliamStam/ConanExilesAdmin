@@ -163,3 +163,16 @@ ALTER TABLE `players_ip`
 --
 ALTER TABLE `system_users`
 	MODIFY `ID` int(6) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+
+CREATE TABLE `system` (
+	`ID` int(6) NOT NULL,
+	`system` varchar(100) DEFAULT NULL,
+	`value` varchar(100) DEFAULT NULL
+);
+
+ALTER TABLE `system`
+	ADD PRIMARY KEY (`ID`);
+
+ALTER TABLE `system`
+	MODIFY `ID` int(6) NOT NULL AUTO_INCREMENT;
