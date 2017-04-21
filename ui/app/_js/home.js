@@ -1,7 +1,7 @@
 $(document).ready(function () {
 
 
-	//getData()
+	getData()
 
 
 	
@@ -12,7 +12,6 @@ function getData() {
 
 	$.getData("/app/data/home/data", {'key':key}, function (data) {
 
-		var stats_data = data['charts'];
 		$("#content-area").jqotesub($("#template-content"), data);
 
 

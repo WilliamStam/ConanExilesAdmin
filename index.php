@@ -40,7 +40,7 @@ if (file_exists("config.inc.php")) {
 	require_once('config.inc.php');
 }
 
-$f3->set('AUTOLOAD', './|lib/|controllers/|inc/|/modules/|/app/controllers/|/resources/**/*');
+$f3->set('AUTOLOAD', './|lib/|controllers/|inc/|/modules/|/app/controllers/|/parser/*');
 $f3->set('PLUGINS', 'vendor/bcosca/fatfree/lib/');
 $f3->set('CACHE', TRUE);
 
@@ -103,6 +103,7 @@ if ($user['ID']) {
 
 
 $f3->set('session', $SID);
+$f3->set('parsers', parser\_run::getInstance()->_list());
 
 //test_array($f3->get("types"));
 
@@ -123,6 +124,7 @@ $f3->route('GET|POST /app/settings/users', 'controllers\app\settings_users->page
 
 
 $f3->route('GET|POST /parse/players', 'controllers\parser\parser->players');
+$f3->route('GET|POST /parser/scan', 'parser\_run->scan');
 
 
 

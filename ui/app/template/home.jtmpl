@@ -1,19 +1,87 @@
 
-
 <script type="text/x-jqote-template" id="template-content">
 	<![CDATA[
+
+
+
 
 	<div id="toolbar" class="" style="top: 47px;">
 		<div class="container small-header">
 			<div class="panel">
 				<div class="panel-body">
-					woof
+					<div class="col-sm-4">
+						<h3>
+							Dashboard
+						</h3>
+					</div>
+
+
+					<div class="col-sm-6">
+						<a href="/app/scan" class="btn btn-default scan-btn">
+							<i class="fa fa-play-circle" style="margin-right:10px;"></i>
+							<span class="hidden-sm">Scan</span>
+						</a>
+
+					</div>
+
+
 
 
 				</div>
 			</div>
 		</div>
 	</div>
+
+	<h2>Scan Results</h2>
+
+	<% for(var i in this.list){ %>
+	<div>
+		<h4 style="margin-bottom:-20px;"><%= this.list[i].label %></h4>
+	</div>
+
+	<table class="table table-condensed table-bordered records stack-table">
+		<thead>
+		<tr class="table-heading-row">
+			<th>
+
+			</th>
+			<th style="width:140px;" class="result-cell">Last Run</th>
+			<th style="width:200px;" class="result-cell">Result</th>
+			<th style="width:100px;" class="result-cell">Time</th>
+		</tr>
+		</thead>
+		<tbody>
+		<% for(var g in this.list[i].parsers){ %>
+		<tr class="parser" data-val="players">
+			<td>
+				<%= this.list[i].parsers[g].description %>
+			</td>
+			<td class="result-cell">
+				<% if(this.list[i].parsers[g].last_scan){ %>
+				<%= this.list[i].parsers[g].last_scan.datein||'' %>
+				<% } %>
+			</td>
+			<td class="result-cell">
+				<% if(this.list[i].parsers[g].last_scan){ %>
+				<%= this.list[i].parsers[g].last_scan.result||'' %>
+				<% } %>
+			</td>
+			<td class="result-cell">
+				<% if(this.list[i].parsers[g].last_scan){ %>
+				<%= this.list[i].parsers[g].last_scan.time||'' %>
+				<% } %>
+			</td>
+		</tr>
+		<% } %>
+
+
+		</tbody>
+
+	</table>
+
+	<% } %>
+
+
 
 	]]>
 </script>
