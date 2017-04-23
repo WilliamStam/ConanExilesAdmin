@@ -64,7 +64,7 @@ class _run {
 
 
 						if (method_exists($class, "display")){
-							$scan['result'] =  $class::getInstance()->display_result($scan['result']);
+							$scan['result'] =  $class::getInstance()->display($scan['result']);
 						}
 
 
