@@ -28,6 +28,7 @@ class _run {
 	function _list(){
 		$return = array();
 		$scans = $this->getLastResults();
+		//test_array($scans);
 		foreach (glob("./parser/*.php") as $input) {
 
 			$class = self::getClass(str_replace(array("./parser/",".php"), "", $input));
@@ -41,20 +42,36 @@ class _run {
 						"db"=>false,
 						"log"=>false
 					);
+
+
+
+					$def['against']['db'] = method_exists($class, "against_db");
+					$def['against']['log'] = false;
+					if (method_exists($class, "against_log")){
+						$def['against']['log'] = true;
+						$def['log_last_timestamp'] = null;
+
+					}
+
 					if (isset($scans[$def['id']])){
 						$scan = $scans[$def['id']];
 						unset($scan['parserID']);
 
-						if (method_exists($class, "display_result")){
-							$scan['result'] =  $class::display_result($scan['result']);
+						if (isset($scan['result']['last_timestamp'])){
+							//test_array($scan);
+							$def['log_last_timestamp'] = $scan['result']['last_timestamp'];
+						}
+
+
+						if (method_exists($class, "display")){
+							$scan['result'] =  $class::getInstance()->display_result($scan['result']);
 						}
 
 
 						$def['last_scan'] = $scan;
-					}
 
-					$def['against']['db'] = method_exists($class, "against_db");
-					$def['against']['log'] = method_exists($class, "against_log");
+
+					}
 
 
 					$return[] = $def;
@@ -67,13 +84,14 @@ class _run {
 		});
 
 		//test_array(array($return,$scans));
-		//test_array($return);
+	//	test_array($return);
 		return $return;
 	}
 	function getLastResults(){
 
 		$return= array();
-		$results = $this->f3->get("DB")->exec("SELECT * FROM (SELECT * FROM scans ORDER BY datein DESC limit 5) as temp GROUP BY parserID");
+		$results = $this->f3->get("DB")->exec("
+SELECT t1.* FROM scans t1 JOIN (SELECT scans.parserID, MAX(datein) datein FROM scans GROUP BY parserID) t2 ON t1.parserID = t2.parserID AND t1.datein = t2.datein; ");
 		foreach ($results as $item){
 
 			$item['result'] = json_decode($item['result'],true);
@@ -81,55 +99,203 @@ class _run {
 			$return[$item['parserID']] = $item;
 		}
 
-
+		//test_array($return);
 		return $return;
 	}
 
+	private function _timestampToNumber($timestamp){
+		return str_replace(array("."," ","-",":"), "", $timestamp);
+	}
 	function scan(){
+		$timer = new timer();
 		$DB = $this->f3->get("GAMEDB");
-		$LOG = fopen($this->cfg['gamelog'], "r");
+
 
 		$results = array();
+		$result_scans = array();
+		$earliestTimeStampFromLogScanners = null;
+
+		$scanners = array();
+
 		foreach ($this->f3->get("parsers") as $item){
+			$scanners[$item['id']] = $item['id']::getInstance();
+
+
 			if ($item['against']['db']){
-				$result =  $item['id']::getInstance()->against_db($DB);
-				$results[$item['id']] =$result;
-				$status = ($result)?1:0;
-				$this->updateScanTable($item['id'], $result, $status);
+				if (!isset($result_scans[$item['id']])){
+					$result_scans[$item['id']] = array(
+						"parser"=>$item['id'],
+						"result"=>array(),
+						"time"=>new timer()
+					);
+				}
+				$result =  $scanners[$item['id']]->against_db($DB);
+
+				if ($result){
+					$result_scans[$item['id']]['result'] = $result;
+				}
+
+
+
 			}
-			/*
+
 			if ($item['against']['log']){
-				$result =  $item['id']::getInstance()->against_log($LOG);
-				$results[$item['id']] =$result;
-				$status = ($result)?1:0;
-				$this->updateScanTable($item['id'], $result, $status);
+				//test_array(array("item"=>$item,"cl"=>$this->_timestampToNumber($item['log_last_timestamp'])));
+
+				if ($earliestTimeStampFromLogScanners==null) {
+					$earliestTimeStampFromLogScanners = $item['log_last_timestamp'];
+				} else {
+					if ($this->_timestampToNumber($item['log_last_timestamp']) < $this->_timestampToNumber($earliestTimeStampFromLogScanners)){
+						$earliestTimeStampFromLogScanners = $item['log_last_timestamp'];
+					}
+				}
+
 			}
-			*/
 
 		}
 
+		//test_array($earliestTimeStampFromLogScanners);
+		ini_set("auto_detect_line_endings", true);
 
 
+
+
+		$LOG = fopen($this->cfg['gamelog'], "rb");
 		if ($LOG) {
-			//while (($line = fgets($handle)) !== false) {
+
+			$logFirstTimeStamp = null;
+			while (!feof($LOG)) {
+				$line = fgets($LOG, 4096);  // use a buffer of 4KB
+
+
+
+
+				//test_array($buffer);
+				$timestamp = $this->getLogTimeStamp($line);
+				if ($timestamp)	{
+
+					if ($logFirstTimeStamp==null){
+						$logFirstTimeStamp = $timestamp;
+
+						// TODO: if the $earliestTimeStampFromLogScanners is earlier than this open a previous log file
+
+					}
+					//test_array($timestamp);
+				}
+
+
+
+
+
+				foreach ($this->f3->get("parsers") as $item){
+
+
+
+					if ($item['against']['log']){
+						// only running the scanners if the log timestamp is greater than the stored last timestamp
+						if ($this->_timestampToNumber($item['log_last_timestamp']) < $this->_timestampToNumber($timestamp)){
+
+							if (!isset($result_scans[$item['id']])){
+								$result_scans[$item['id']] = array(
+									"parser"=>$item['id'],
+									"result"=>array(),
+									"time"=>new timer(),
+
+									"status"=>0,
+									"last_timestamp"=>null
+								);
+							}
+
+
+							$result =   $scanners[$item['id']]->against_log($line,$timestamp);
+							if ($result){
+								$result_scans[$item['id']]['result'][] = $result;
+							}
+
+							if ($timestamp){
+								$result_scans[$item['id']]['last_timestamp'] = $timestamp;
+							}
+						}
+
+
+
+					}
+				}
+				///
+			}
+
+
+			//test_array($result_scans);
+			foreach ($result_scans as $key=>$item){
+				$time = $item['time']->stop();
+				$status = 0;
+
+				$results[$item['parser']]['result'] =  $item['result'];
+				$results[$item['parser']]['time'] =  $time;
+
+				$result = $item['result'];
+				$result['time'] = $time;
+				$result['last_timestamp'] = $item['last_timestamp'];
+			//	test_array($item);
+
+				if (method_exists($item['parser'], "action")){
+
+					$results[$item['parser']]['status'] =  $status = $scanners[$item['parser']]->action( $item['result']);;
+				}
+
+
+				$this->updateScanTable($item['parser'], $result, $status);
+
+
+
+			}
+
+
+			//$this->updateScanTable($item['id'], $result, $status);
+
 			fclose($LOG);
 		} else {
 			// error opening the file.
 		}
 
 
+		$timeTaken = $timer->stop();
 
-
-		test_array($results);
+		test_array(array("time"=>$timeTaken,"results"=>$results));
 
 	}
+	function getLogTimeStamp($line){
+
+		$timestamp = false;
+		if (substr($line,0,1)=="["){
+			// [2017.04.20-03.48.44:766]
+
+			// TODO: turn this into a regex. but my phone a friend is in hospital
+
+			$timestamp	= substr($line, 1, 23);
+			$datetimestamp = substr($timestamp, 0, 4)."-".substr($timestamp, 5, 2)."-".substr($timestamp, 8, 2)." ".substr($timestamp, 11, 2).":".substr($timestamp, 14, 2).":".substr($timestamp, 17, 2);
+
+
+			if (date("Y-m-d H:i:s",strtotime($datetimestamp))!=$datetimestamp){
+				$timestamp = false;
+			}
+
+		}
+		//test_string($line);
+
+
+
+		return $timestamp;
+	}
+
 
 	function updateScanTable($parser,$result,$status){
 
 		$this->scansORM->parserID = $parser;
 		$this->scansORM->result = json_encode($result);
-		$this->scansORM->status = $status;
+		$this->scansORM->execute_time = $result['time'];
 		$this->scansORM->save();
+		$this->scansORM->reset();
 
 
 

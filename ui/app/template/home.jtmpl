@@ -68,7 +68,7 @@
 			</td>
 			<td class="result-cell">
 				<% if(this.list[i].parsers[g].last_scan){ %>
-				<%= this.list[i].parsers[g].last_scan.time||'' %>
+				<%= this.list[i].parsers[g].last_scan.execute_time||'' %>
 				<% } %>
 			</td>
 		</tr>

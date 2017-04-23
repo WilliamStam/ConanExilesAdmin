@@ -27,7 +27,7 @@ class player_details_db extends _run {
 	}
 
 	function against_db($db){
-		$timer = new timer();
+
 		$return = array(
 			"same"=>0,
 			"updated"=>0,
@@ -71,18 +71,13 @@ class player_details_db extends _run {
 
 		}
 
-		$timer->_stop(__NAMESPACE__, __CLASS__, __FUNCTION__, func_get_args());
 
-		$return = array(
-			"result"=>$return,
-			"time"=>$timer->stop()
-		);
 		return $return;
 
 
 	}
 
-	static function display_result($result){
+	function display($result){
 
 
 		$result = $result['result'];
@@ -92,7 +87,10 @@ class player_details_db extends _run {
 		//test_array($str);
 		return $str;
 	}
-	
+
+	function action($results){
+
+	}
 
 	
 }
