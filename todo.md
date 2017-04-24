@@ -4,8 +4,8 @@
 
 #### Dashboard
  - System Logs
-     - [ ] Scans run
-         - [ ] Scan results
+     - [x] Scans run
+         - [x] Scan results
      - [ ] Bans added / removed / changed
          - Manual IP
          - Player bans
@@ -51,7 +51,8 @@
 ## Parser
 #### Players
  - [x] Players Details  - game.db
- - [ ] Players IP - login log file
+ - [x] Players IP - login log file
+ - [ ] Players login logout - login log file
  
 
 #### Action parsers

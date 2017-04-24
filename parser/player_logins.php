@@ -102,7 +102,7 @@ class player_logins extends _run {
 			if ($return['char_name']=="Kwagga"){
 
 			} else {
-				$return = false;
+			//	$return = false;
 			}
 		}
 
