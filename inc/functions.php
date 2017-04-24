@@ -235,7 +235,10 @@ function test_array($array) {
 	header("Content-Type: application/json");
 	$f3 = \Base::instance();
 	$f3->set("__testJson",true);
-	echo json_encode($array);
+
+		echo json_encode($array,JSON_PRETTY_PRINT);
+
+
 	exit();
 }
 

@@ -106,6 +106,12 @@ SELECT t1.* FROM scans t1 JOIN (SELECT scans.parserID, MAX(datein) datein FROM s
 	private function _timestampToNumber($timestamp){
 		return str_replace(array("."," ","-",":"), "", $timestamp);
 	}
+	private function _microtime(){
+		$mtime = microtime();
+		$mtime = explode(" ", $mtime);
+		$start = $mtime[1] + $mtime[0];
+		return $start;
+	}
 	function scan(){
 		$timer = new timer();
 		$DB = $this->f3->get("GAMEDB");
@@ -126,10 +132,17 @@ SELECT t1.* FROM scans t1 JOIN (SELECT scans.parserID, MAX(datein) datein FROM s
 					$result_scans[$item['id']] = array(
 						"parser"=>$item['id'],
 						"result"=>array(),
-						"time"=>new timer()
+						"time"=>0
 					);
 				}
+
+
+
+
+				$start = $this->_microtime();
 				$result =  $scanners[$item['id']]->against_db($DB);
+				$result_scans[$item['id']]['time'] = $result_scans[$item['id']]['time'] + ($this->_microtime() - $start);
+
 
 				if ($result){
 					$result_scans[$item['id']]['result'] = $result;
@@ -199,15 +212,16 @@ SELECT t1.* FROM scans t1 JOIN (SELECT scans.parserID, MAX(datein) datein FROM s
 								$result_scans[$item['id']] = array(
 									"parser"=>$item['id'],
 									"result"=>array(),
-									"time"=>new timer(),
+									"time"=>0,
 
 									"status"=>0,
 									"last_timestamp"=>null
 								);
 							}
 
-
+							$start = $this->_microtime();
 							$result =   $scanners[$item['id']]->against_log($line,$timestamp);
+							$result_scans[$item['id']]['time'] = $result_scans[$item['id']]['time'] + ($this->_microtime() - $start);
 							if ($result){
 								$result_scans[$item['id']]['result'][] = $result;
 							}
@@ -227,20 +241,22 @@ SELECT t1.* FROM scans t1 JOIN (SELECT scans.parserID, MAX(datein) datein FROM s
 
 			//test_array($result_scans);
 			foreach ($result_scans as $key=>$item){
-				$time = $item['time']->stop();
 				$status = 0;
 
 				$results[$item['parser']]['result'] =  $item['result'];
-				$results[$item['parser']]['time'] =  $time;
+				$results[$item['parser']]['scan_time'] =  $item['time'];
+				$results[$item['parser']]['action_time'] =  0;
 
 				$result = $item['result'];
-				$result['time'] = $time;
+				$result['time'] = $item['time'];
 				$result['last_timestamp'] = $item['last_timestamp'];
 			//	test_array($item);
 
 				if (method_exists($item['parser'], "action")){
-
+					$start = $this->_microtime();
 					$results[$item['parser']]['status'] =  $status = $scanners[$item['parser']]->action( $item['result']);;
+					$results[$item['parser']]['action_time'] = ($this->_microtime() - $start);
+
 				}
 
 
