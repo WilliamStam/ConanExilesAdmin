@@ -26,7 +26,7 @@ class player_logins extends _run {
 			"id"=>__CLASS__,
 			"group"=>"Players",
 			"description"=>"Updates the players Logins / Logouts",
-			"order"=>3
+			"order"=>8
 		);
 
 		return $return;

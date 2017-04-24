@@ -7,21 +7,8 @@ class player_ip_log extends _run {
 	function __construct() {
 		parent::__construct();
 
-		$players = array();
-		$players_ = models\players::getInstance()->getAll("","ID ASC");
-		foreach ($players_ as $item){
-			$players[$item['char_name']] = array(
-				"ID"=>$item['ID'],
-				"playerId"=>$item['playerId'],
-				"char_name"=>$item['char_name'],
-				"ip"=>null,
-				"port"=>null,
-				"timestamp"=>null,
-			);
-		}
 
-		$this->players = $players;
-
+		$this->players=false;
 		
 	}
 	public static function getInstance() {
@@ -37,12 +24,29 @@ class player_ip_log extends _run {
 			"id"=>__CLASS__,
 			"group"=>"Players",
 			"description"=>"Finds the players IP addresses from the log file",
-			"order"=>1
+			"order"=>5
 		);
 
 		return $return;
 	}
 	function against_log($line,$timestamp){
+
+		if ($this->players===false){
+			$players = array();
+			$players_ = models\players::getInstance()->getAll("","ID ASC");
+			foreach ($players_ as $item){
+				$players[$item['char_name']] = array(
+					"ID"=>$item['ID'],
+					"playerId"=>$item['playerId'],
+					"char_name"=>$item['char_name'],
+					"ip"=>null,
+					"port"=>null,
+					"timestamp"=>null,
+				);
+			}
+
+			$this->players = $players;
+		}
 
 		$return = false;
 
