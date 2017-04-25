@@ -310,7 +310,7 @@ SELECT t1.* FROM scans t1 JOIN (SELECT scans.parserID, MAX(datein) datein FROM s
 		$this->scansORM->parserID = $parser;
 		$this->scansORM->result = json_encode($result);
 		$this->scansORM->execute_time = $result['time'];
-	//	$this->scansORM->save();
+		$this->scansORM->save();
 		$this->scansORM->reset();
 
 
