@@ -178,6 +178,10 @@ class players_logins extends _ {
 		$i = 1;
 		$n = array();
 		foreach ($data as $item) {
+			$item['login_time'] = timeStampToDate($item['login_timestamp']);
+			$item['logout_time'] = timeStampToDate($item['logout_timestamp']);
+			$item['login_timeago'] =  timesince(timeStampToDate($item['login_timestamp']));
+			$item['logout_time'] =  timesince(timeStampToDate($item['logout_timestamp']));
 
 
 

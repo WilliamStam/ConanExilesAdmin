@@ -49,8 +49,26 @@ class players extends _ {
 		$ID = isset($_GET['ID'])?$_GET['ID']:"";
 
 		$return= models\players::getInstance()->get($ID,array("IP"=>true));
+		$logins_ = models\players_logins::getInstance()->getAll("playerID='{$return['ID']}'","login_timestamp DESC","0,10");
 
-		$return['logins'] = models\players_logins::getInstance()->getAll("playerID='{$return['ID']}'","login_timestamp DESC","0,10");
+		$logins = array();
+
+		foreach ($logins_ as $item){
+			$key = date("Ymd",strtotime($item['login_time']));
+			if (!isset($logins[$key])){
+				$logins[$key] = array(
+					"label"=>date("D, d M Y",strtotime($item['login_time'])),
+					"records"=>array()
+				);
+			}
+
+			$logins[$key]['records'][] = $item;
+
+		}
+
+
+
+		$return['logins'] = $logins;
 		$return['ips'] = models\players_ips::getInstance()->getAll("playerID='{$return['ID']}'","timestamp DESC","0,10");
 
 
