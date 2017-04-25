@@ -123,7 +123,7 @@ $f3->route('GET|POST /app/scan', 'controllers\app\scan->page');
 $f3->route('GET|POST /app/settings/users', 'controllers\app\settings_users->page');
 
 
-$f3->route('GET|POST /parse/players', 'controllers\parser\parser->players');
+//$f3->route('GET|POST /parse/players', 'controllers\parser\parser->players');
 $f3->route('GET|POST /parser/scan', 'parser\_run->scan');
 
 
