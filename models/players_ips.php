@@ -3,7 +3,7 @@ namespace models;
 
 use \timer as timer;
 
-class players extends _ {
+class players_ips extends _ {
 	private static $instance;
 
 	function __construct() {
@@ -23,7 +23,7 @@ class players extends _ {
 
 	function get($ID, $options = array()) {
 		$timer = new timer();
-		$where = "players.ID = '$ID'";
+		$where = "ID = '$ID'";
 
 
 
@@ -35,7 +35,7 @@ class players extends _ {
 
 		}
 		else {
-			$return = parent::dbStructure("players");
+			$return = parent::dbStructure("players_ip");
 		}
 
 		if ($options['format']) {
@@ -84,15 +84,12 @@ class players extends _ {
 		}
 
 
-		$ip_join = "";
-		if (isset($options['IP'])&&$options['IP']) {
-			$ip_join = ",(SELECT CONCAT(ip,':',port) AS last_ip FROM players_ip WHERE playerID = players.ID ORDER BY ID DESC LIMIT 0,1) AS last_ip ";
-		}
+
 
 
 		$result = $f3->get("DB")->exec("
-			 SELECT DISTINCT players.*, system_users.fullname as banned_user_name $ip_join
-			FROM players LEFT JOIN system_users ON system_users.ID = players.banned_uID
+			 SELECT DISTINCT players_ip.*
+			FROM players_ip
 			$where
 			$orderby
 			$limit;
@@ -106,6 +103,8 @@ class players extends _ {
 
 
 
+
+
 	public static function _save($ID, $values = array()) {
 		$timer = new timer();
 		$f3 = \Base::instance();
@@ -114,7 +113,7 @@ class players extends _ {
 
 		//test_array($values);
 
-		$a = new \DB\SQL\Mapper($f3->get("DB"), "players");
+		$a = new \DB\SQL\Mapper($f3->get("DB"), "players_ip");
 		$a->load("ID='$ID'");
 
 		foreach ($values as $key => $value) {
@@ -147,7 +146,7 @@ class players extends _ {
 		$user = $f3->get("user");
 
 
-		$a = new \DB\SQL\Mapper($f3->get("DB"), "players");
+		$a = new \DB\SQL\Mapper($f3->get("DB"), "players_ip");
 		$a->load("ID='$ID'");
 
 		$a->erase();
@@ -179,10 +178,7 @@ class players extends _ {
 		$i = 1;
 		$n = array();
 		foreach ($data as $item) {
-			$item['timeago']['lastTimeOnline'] = timesince(date("Y-m-d H:i:s",$item['lastTimeOnline']));
-			$item['timeago']['lastlogin'] = timesince($item['lastlogin']);
-			$item['timeago']['lastActivity'] = timesince($item['lastActivity']);
-			$item['raw_settings'] = (json_decode($item['settings'], TRUE));
+			$item['timeago'] = timesince(timeStampToDate($item['timestamp']));
 
 
 			$n[] = $item;

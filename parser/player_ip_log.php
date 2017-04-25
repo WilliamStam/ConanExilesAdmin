@@ -33,7 +33,8 @@ class player_ip_log extends _run {
 
 		if ($this->players===false){
 			$players = array();
-			$players_ = models\players::getInstance()->getAll("","ID ASC");
+			$players_ = models\players::getInstance()->getAll("","ID ASC","",array("IP"=>true));
+			//test_array($players_);
 			foreach ($players_ as $item){
 				$players[$item['char_name']] = array(
 					"ID"=>$item['ID'],
@@ -42,6 +43,7 @@ class player_ip_log extends _run {
 					"ip"=>null,
 					"port"=>null,
 					"timestamp"=>null,
+					"last_ip"=>$item['last_ip'],
 				);
 			}
 
@@ -51,20 +53,10 @@ class player_ip_log extends _run {
 		$return = false;
 
 
-		// [2017.04.20-11.49.41:754][194]LogNet: Join succeeded: WtFnE$$
-		// [2017.04.20-11.49.41:900][198]BattlEyeLogging: BattlEyeServer: Print Message: Player #2 WtFnE$$ (45.220.33.198:55078) connected
-		// [2017.04.20-11.49.41:900][198]BattlEyeLogging: BattlEyeServer: Print Message: Player #2 WtFnE$$ - GUID: 5e105a859f4fddc44bf9615f75c1c37a
-
-
-		// [2017.04.18-07.30.56:722][414]BattlEyeLogging: BattlEyeServer: Print Message: Player #1 percy1994 (41.113.222.239:3690) connected
-
-
 
 
 		if (strpos($line,"BattlEyeLogging: BattlEyeServer: Print Message: Player #")&&strpos($line,"connected")){
-
 			// TODO: use regex to get all the data
-
 
 			$re = '^\[([^]]*)\]\[([^]]*)\]([^:]*):([^:]*): ([^:]*): Player ([^ ]*) ([^ (]*) (\([^)]*\))';
 
@@ -84,13 +76,7 @@ class player_ip_log extends _run {
 					$this->players[$matches[0][7]]['timestamp']  = $timestamp;
 					$return = $this->players[$matches[0][7]];
 				}
-
-
 			}
-
-
-
-
 		}
 
 
@@ -116,21 +102,21 @@ class player_ip_log extends _run {
 		$players = array();
 		foreach ($players_ as $item){
 			if ($item['ip']){
-				$players[$item['ID']] = $item;
+					$players[$item['ID']] = $item;
+
 			}
 		}
 
 		$table = new \DB\SQL\Mapper($this->f3->get("DB"),"players_ip");
 
 		foreach ($players as $item){
-
-
-
+			$table->load("playerID='{$item['ID']}' AND timestamp = '{$item['timestamp']}'");
 			$table->ip = $item['ip'];
 			$table->port = $item['port'];
 			$table->playerID = $item['ID'];
 			$table->timestamp = $item['timestamp'];
 			$table->save();
+			$table->reset();
 
 		}
 

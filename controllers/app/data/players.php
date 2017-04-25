@@ -44,6 +44,18 @@ class players extends _ {
 
 		return $GLOBALS["output"]['data'] = $return;
 	}
+	function details() {
+		$return = array();
+		$ID = isset($_GET['ID'])?$_GET['ID']:"";
+
+		$return= models\players::getInstance()->get($ID,array("IP"=>true));
+
+		$return['logins'] = models\players_logins::getInstance()->getAll("playerID='{$return['ID']}'","login_timestamp DESC","0,10");
+		$return['ips'] = models\players_ips::getInstance()->getAll("playerID='{$return['ID']}'","timestamp DESC","0,10");
+
+
+		return $GLOBALS["output"]['data'] = $return;
+	}
 
 
 

@@ -1,81 +1,81 @@
 <?php
+
 namespace parser;
+
 use \timer as timer;
 use \models as models;
+
 class player_logins extends _run {
 	private static $instance;
+
 	function __construct() {
 		parent::__construct();
-		$players = array();
-		$players_ = models\players::getInstance()->getAll("","ID ASC");
-		foreach ($players_ as $item){
-			$players[$item['char_name']] = $item['ID'];
-		}
+		$this->players = false;
+		$this->result = array();
 
-		$this->players = $players;
+		$this->max_session_length_in_minutes = 1440;
 	}
+
 	public static function getInstance() {
-		if (is_null(self::$instance)) {
+		if ( is_null(self::$instance) ) {
 			self::$instance = new self();
 		}
 
 		return self::$instance;
 	}
-	static function def(){
+
+	static function def() {
 		$return = array(
-			"id"=>__CLASS__,
-			"group"=>"Players",
-			"description"=>"Updates the players Logins / Logouts",
-			"order"=>8
+			"id" => __CLASS__,
+			"group" => "Players",
+			"description" => "Updates the players Logins / Logouts",
+			"order" => 8,
 		);
 
 		return $return;
 	}
-	function against_log($line,$timestamp){
 
-		$return = false;
-
-
-		// [2017.04.20-11.49.41:754][194]LogNet: Join succeeded: WtFnE$$
-		// [2017.04.20-11.49.41:900][198]BattlEyeLogging: BattlEyeServer: Print Message: Player #2 WtFnE$$ (45.220.33.198:55078) connected
-		// [2017.04.20-11.49.41:900][198]BattlEyeLogging: BattlEyeServer: Print Message: Player #2 WtFnE$$ - GUID: 5e105a859f4fddc44bf9615f75c1c37a
-
-
-		// [2017.04.18-07.30.56:722][414]BattlEyeLogging: BattlEyeServer: Print Message: Player #1 percy1994 (41.113.222.239:3690) connected
+	function against_log($line, $timestamp) {
+		$return = FALSE;
 
 
 
 
-		if (strpos($line,"BattlEyeLogging: BattlEyeServer: Print Message: Player #")&&strpos($line,"connected")){
 
-
-
-
-			if (strpos($line,"disconnected")){
+		if ( strpos($line, "BattlEyeLogging: BattlEyeServer: Print Message: Player #") && strpos($line, "connected") ) {
+			if ( strpos($line, "disconnected") ) {
 				$re = '^\[([^]]*)\]\[([^]]*)\]([^:]*):([^:]*): ([^:]*): Player ([^ ]*) ([^ (]*)';
 
-				$re = '/'.$re.'/';
+				$re = '/' . $re . '/';
 				preg_match_all($re, $line, $matches, PREG_SET_ORDER, 0);
 				$return = array(
 					"timestamp" => $timestamp,
 					"type" => "disconnect",
-					//"session" => $matches[0][2],
 					"char_name" => $matches[0][7],
-					"playerId" => $this->players[$matches[0][7]],
-					"line"=>$line,
+
+					"line" => $line,
 					//	"matches"=>$matches
 				);
 				//test_array($return);
 
+				$this->result[$return['char_name']][] = array(
+					"login"=>$timestamp,
+					"logout"=>"",
+					"duration"=>null
+				);
+
 			} else {
 				$re = '^\[([^]]*)\]\[([^]]*)\]([^:]*):([^:]*): ([^:]*): Player ([^ ]*) ([^ (]*) (\([^)]*\))';
 
-				$re = '/'.$re.'/';
+				$re = '/' . $re . '/';
 				preg_match_all($re, $line, $matches, PREG_SET_ORDER, 0);
 				$ip_ = $matches[0][8];
-				$ip_ = str_replace(array("(",")"), "", $ip_);
+				$ip_ = str_replace(array(
+					"(",
+					")",
+				), "", $ip_);
 
-				$ip_ = explode(":",$ip_);
+				$ip_ = explode(":", $ip_);
 				$ip = $ip_[0];
 				$port = $ip_[1];
 
@@ -85,29 +85,36 @@ class player_logins extends _run {
 				$return = array(
 					"timestamp" => $timestamp,
 					"type" => "connect",
-					//"session" => $matches[0][2],
 					"char_name" => $matches[0][7],
-					"playerId" => $this->players[$matches[0][7]],
+
 					"ip" => $ip,
 					"port" => $port,
-					"line"=>$line
+					"line" => $line,
 				);
+				if ($this->result[$return['char_name']]){
+					//test_array($this->result[$return['char_name']]);
+					foreach ($this->result[$return['char_name']] as $k => $item){
+
+						if ($item['logout']==""){
+							$this->result[$return['char_name']][$k]['logout'] = $timestamp;
+
+							$s = strtotime(timeStampToDate($this->result[$return['char_name']][$k]['login']));
+							$e = strtotime(timeStampToDate($this->result[$return['char_name']][$k]['logout']));
+
+							$duration = round(abs($e - $s) / 60,2);
+							$this->result[$return['char_name']][$k]['duration'] = $duration;
+
+						}
+					}
+				}
+
+
+			//	$this->result[$return['char_name']][$this->result[$return['char_name']][0]] = $timestamp;
 
 			}
 
 
 		}
-
-		if ($return){
-			if ($return['char_name']=="Kwagga"){
-
-			} else {
-			//	$return = false;
-			}
-		}
-
-
-
 
 
 		return $return;
@@ -115,5 +122,128 @@ class player_logins extends _run {
 
 	}
 
-	
+	function display($result) {
+
+
+		$result = $result['result'];
+
+		//	$str = "S: ".$result['same']." | U: ".$result['updated'].' | A: '.$result['added'];
+
+		//test_array($str);
+		return json_encode($result);
+	}
+
+	function action($results) {
+		$players = array();
+		$players_ = models\players::getInstance()->getAll("","ID ASC","",array("IP"=>true));
+
+		foreach ($players_ as $item){
+			$players[$item['char_name']] = array(
+				"ID"=>$item['ID'],
+				"playerId"=>$item['playerId'],
+				"char_name"=>$item['char_name'],
+				"ip"=>null,
+				"port"=>null,
+				"timestamp"=>null,
+				"last_ip"=>$item['last_ip'],
+			);
+		}
+		$result_logins = array();
+		$table = new \DB\SQL\Mapper($this->f3->get("DB"),"players_logins");
+
+		$logouts = array();
+		foreach ($results as $item){
+			if (isset($players[$item['char_name']])){
+				$playerID = $players[$item['char_name']]['ID'];
+
+				if ($item['type']=='connect'){
+					$table->load("playerID='{$playerID}' AND login_timestamp='{$item['timestamp']}'");
+					$table->playerID = $playerID;
+					$table->login_timestamp = $item['timestamp'];
+					$table->save();
+					$table->reset();
+
+				}
+				if ($item['type']=='disconnect'){
+					$timekey = str_replace(array(".",":"," ","-"),"",$item['timestamp']);
+					$item['logout_timestamp_time'] = timeStampToDate($item['timestamp']);
+					$logouts[$timekey] = $item;
+				}
+			}
+		}
+
+
+
+
+
+		$records = $this->f3->get("DB")->exec("SELECT * FROM players_logins WHERE logout_timestamp is null ORDER BY login_timestamp ASC");
+
+
+
+		$logins = array();
+		foreach ($records as $item){
+			$timekey = str_replace(array(".",":"," ","-"),"",$item['login_timestamp']);
+			$item['login_timestamp_time'] = timeStampToDate($item['login_timestamp']);
+			$logins[$timekey] = $item;
+		}
+
+
+		asort($logins);
+		arsort($logouts);
+
+
+		$result = array();
+
+		foreach ($logins as $inK=>$inV){
+			foreach ($logouts as $loK=>$loV){
+
+				if ($inK<$loK){
+					$inV['logout_timestamp'] = $loV['timestamp'];
+
+					$to_time = strtotime($inV['login_timestamp_time']);
+					$from_time = strtotime($loV['logout_timestamp_time']);
+					$duration = round(abs($to_time - $from_time) / 60,2);
+
+
+					$inV['duration'] = $duration;
+				}
+
+			}
+
+			if ($inV['duration']<$this->max_session_length_in_minutes) $result[] = $inV;
+
+		}
+
+
+		foreach ($result as $item){
+
+					$table->load("ID='{$item['ID']}'");
+					$table->playerID = $item['playerID'];
+					$table->logout_timestamp = $item['logout_timestamp'];
+					$table->duration = $item['duration'];
+					$table->save();
+					$table->reset();
+
+
+
+		}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		return 1;
+	}
+
+
 }

@@ -27,7 +27,19 @@ $(document).ready(function () {
 
 		getData();
 	});
+	$(document).on("click",".record", function (e) {
+		e.preventDefault();
+		var id = $(this).attr("data-id");
 
+		$.bbq.pushState({"playerID":id});
+
+
+		getDetails();
+	});
+
+	if ($.bbq.getState("playerID")){
+		getDetails();
+	}
 	
 });
 function getData() {
@@ -45,6 +57,26 @@ function getData() {
 
 		$(window).trigger("resize");
 	},"data")
+
+}
+
+function getDetails() {
+	var key =  $.bbq.getState("playerID");
+
+
+	$.getData("/app/data/players/details", {'ID':key}, function (data) {
+
+
+		$("#modal-window").jqotesub($("#template-modal-player-details"), data).modal("show").on("hide.bs.modal", function () {
+			$.bbq.pushState({"playerID": ""});
+
+		});
+
+
+
+
+
+	},"details")
 
 }
 

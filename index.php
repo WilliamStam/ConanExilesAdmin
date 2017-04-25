@@ -147,7 +147,11 @@ $f3->route('GET /php', function () {
 });
 
 
+function timeStampToDate($timestamp){
+	$datetimestamp = substr($timestamp, 0, 4)."-".substr($timestamp, 5, 2)."-".substr($timestamp, 8, 2)." ".substr($timestamp, 11, 2).":".substr($timestamp, 14, 2).":".substr($timestamp, 17, 2);
+	return $datetimestamp;
 
+}
 
 
 $f3->route("GET|POST /app/save/@function", function ($app, $params) {

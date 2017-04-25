@@ -1,4 +1,48 @@
 
+<script type="text/x-jqote-template" id="template-modal-player-details">
+	<![CDATA[
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<div class="color-line"></div>
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span></button>
+				<h4 class="modal-title"><%= this.char_name %></h4>
+			</div>
+			<div class="modal-body" >
+
+
+
+				<h4>Login Data</h4>
+				<ul class="list-group">
+					<% for(var i in this.logins){ %>
+					<li class="list-group-item">
+						<span class="badge"><%= this.logins[i].duration %> min</span>
+						<%= this.logins[i].login_timestamp %> - <%= this.logins[i].login_timestamp %>
+					</li>
+					<% } %>
+				</ul>
+				<h4>IP Addresses</h4>
+				<ul class="list-group">
+					<% for(var i in this.ips){ %>
+					<li class="list-group-item">
+						<span class="badge"><%= this.ips[i].timeago %></span>
+						<%= this.ips[i].ip %>
+					</li>
+					<% } %>
+				</ul>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+
+	]]>
+</script>
+
+
 <script type="text/x-jqote-template" id="template-content">
 	<![CDATA[
 	<div id="toolbar" class="" style="top: 47px;">
@@ -107,7 +151,7 @@
 		<tbody>
 		<% for(var g in this.list){ %>
 
-		<tr class="record <% if(this.list[g].banned=='1'){ %>danger<% } %>">
+		<tr class="record <% if(this.list[g].banned=='1'){ %>danger<% } %>" data-id="<%= this.list[g].ID %>">
 			<td>
 				<a href="https://steamcommunity.com/profiles/<%= this.list[g].playerId||'' %>/" target="_blank">
 				<%= this.list[g].playerId||'' %></a>
