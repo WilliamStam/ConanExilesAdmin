@@ -104,7 +104,6 @@ class players_ips extends _ {
 
 
 
-
 	public static function _save($ID, $values = array()) {
 		$timer = new timer();
 		$f3 = \Base::instance();

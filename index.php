@@ -146,6 +146,15 @@ $f3->route('GET /php', function () {
 	exit();
 });
 
+$f3->route('GET|POST /blacklist', 'controllers\front\blacklist->all');
+$f3->route('GET|POST /blacklist/ip', 'controllers\front\blacklist->ip');
+$f3->route('GET|POST /blacklist/banned', 'controllers\front\blacklist->banned');
+
+
+
+
+
+
 
 function timeStampToDate($timestamp){
 	$datetimestamp = substr($timestamp, 0, 4)."-".substr($timestamp, 5, 2)."-".substr($timestamp, 8, 2)." ".substr($timestamp, 11, 2).":".substr($timestamp, 14, 2).":".substr($timestamp, 17, 2);

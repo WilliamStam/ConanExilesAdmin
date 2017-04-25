@@ -21,7 +21,9 @@ $cfg['gamelog'] = "C:\\Game_Servers\\conan_exiles_server\\ConanSandbox\\Saved\\L
 
 //backups "ConanSandbox-backup-2017.04.20-05.48.44"
 
-$cfg['ban_time'] = (60*60)*6;
+$cfg['ban_time'] = 60*3; // minutes
+
+
 
 
 $cfg['active'] = "5 days";
